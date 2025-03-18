@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import AppKit  // Add this for NSUserName
 
 // MARK: - Main Command
 struct MacRecon: ParsableCommand {
@@ -216,8 +217,8 @@ extension MacRecon {
             
             if !suspiciousEnvVars.isEmpty {
                 print("\nSuspicious environment variables:")
-                for var in suspiciousEnvVars {
-                    print("- \(var)")
+                for varName in suspiciousEnvVars {
+                    print("- \(varName)")
                 }
             }
         }
@@ -355,203 +356,200 @@ extension MacRecon {
         
         // Helper to print privesc findings
         private func printPrivEscFindings(worldWritableFiles: [String], pathHijack: (vulnerable: Bool, writableDirs: [String])) {
-            print
-            // Helper to print privesc findings
-                    private func printPrivEscFindings(worldWritableFiles: [String], pathHijack: (vulnerable: Bool, writableDirs: [String])) {
-                        print("\n=== Privilege Escalation Opportunities ===")
-                        
-                        if !worldWritableFiles.isEmpty {
-                            print("\nWorld-writable files in sensitive locations:")
-                            for file in worldWritableFiles {
-                                print("- \(file)")
-                            }
-                            print("\nThese files could potentially be modified to execute arbitrary code with elevated privileges.")
-                        } else {
-                            print("No world-writable files found in sensitive locations.")
-                        }
-                        
-                        if pathHijack.vulnerable {
-                            print("\nPATH Hijacking vulnerability detected!")
-                            print("The following directories in PATH are writable:")
-                            for dir in pathHijack.writableDirs {
-                                print("- \(dir)")
-                            }
-                            print("\nYou can potentially hijack commands by placing malicious executables in these directories.")
-                        } else {
-                            print("\nNo PATH hijacking opportunities found.")
-                        }
-                        
-                        // Check if current user can sudo
-                        if StealthUtils.isProcessAdmin() {
-                            print("\nCurrently running with admin privileges!")
-                        } else {
-                            let adminUsers = StealthUtils.getAdminUsers()
-                            if adminUsers.contains(NSUserName()) {
-                                print("\nCurrent user has sudo privileges. Can escalate with password.")
-                            } else {
-                                print("\nCurrent user does not have sudo privileges.")
-                            }
-                        }
+            print("\n=== Privilege Escalation Opportunities ===")
+            
+            if !worldWritableFiles.isEmpty {
+                print("\nWorld-writable files in sensitive locations:")
+                for file in worldWritableFiles {
+                    print("- \(file)")
+                }
+                print("\nThese files could potentially be modified to execute arbitrary code with elevated privileges.")
+            } else {
+                print("No world-writable files found in sensitive locations.")
+            }
+            
+            if pathHijack.vulnerable {
+                print("\nPATH Hijacking vulnerability detected!")
+                print("The following directories in PATH are writable:")
+                for dir in pathHijack.writableDirs {
+                    print("- \(dir)")
+                }
+                print("\nYou can potentially hijack commands by placing malicious executables in these directories.")
+            } else {
+                print("\nNo PATH hijacking opportunities found.")
+            }
+            
+            // Check if current user can sudo
+            if StealthUtils.isProcessAdmin() {
+                print("\nCurrently running with admin privileges!")
+            } else {
+                let adminUsers = StealthUtils.getAdminUsers()
+                if adminUsers.contains(NSUserName()) {
+                    print("\nCurrent user has sudo privileges. Can escalate with password.")
+                } else {
+                    print("\nCurrent user does not have sudo privileges.")
+                }
+            }
+        }
+    }
+    
+    // Command to run all modules
+    struct RunAll: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            commandName: "all",
+            abstract: "Run all reconnaissance and privilege escalation checks"
+        )
+        
+        @OptionGroup var options: CommonOptions
+        
+        @Flag(name: .long, help: "Skip privilege escalation checks")
+        var skipPrivEsc: Bool = false
+        
+        @Flag(name: .long, help: "Include browser history in report")
+        var includeBrowserHistory: Bool = false
+        
+        @Flag(name: .long, help: "Self-delete after execution")
+        var selfDelete: Bool = false
+        
+        func run() throws {
+            // Add random delay if in extra stealth mode
+            if options.extraStealth {
+                usleep(UInt32.random(in: 100000...500000)) // 100-500ms
+            }
+            
+            // Check for debugging/analysis
+            if StealthUtils.isBeingDebugged() {
+                if !options.quiet {
+                    print("[WARNING] Debugging detected. Proceeding with limited functionality.")
+                }
+                // We continue anyway but could add evasion here
+            }
+            
+            if !options.quiet {
+                print("MacRecon starting full reconnaissance...")
+            }
+            
+            // 1. Run system information gathering
+            if !options.quiet {
+                print("\nRunning system information gathering...")
+            }
+            
+            let sysInfo = SystemInfoGatherer()
+            let systemInfo = sysInfo.gatherBasicInfo()
+            
+            // 2. Detect security tools
+            if !options.quiet {
+                print("\nDetecting security tools and environment...")
+            }
+            
+            let securityTools = StealthUtils.detectSecurityTools()
+            let analysisTools = StealthUtils.checkForAnalysisTools()
+            let isVM = StealthUtils.isRunningInVM()
+            
+            // 3. Check launch items
+            if !options.quiet {
+                print("\nEnumerating launch agents and daemons...")
+            }
+            
+            let launchItems = StealthUtils.getLaunchItems()
+            
+            // 4. Run privilege escalation checks if not skipped
+            var privEscResults: (worldWritable: [String], pathHijack: (Bool, [String])) = ([], (false, []))
+            if !skipPrivEsc {
+                if !options.quiet {
+                    print("\nRunning privilege escalation checks...")
+                }
+                
+                // Define sensitive directories
+                let sensitiveDirs = [
+                    "/Applications",
+                    "/Library/LaunchAgents",
+                    "/Library/LaunchDaemons",
+                    "/usr/local/bin",
+                    "/usr/local/sbin"
+                ]
+                
+                // Check for world-writable files
+                let worldWritableFiles = StealthUtils.findWorldWritableFiles(in: sensitiveDirs)
+                
+                // Check for PATH hijacking opportunities
+                let pathHijackInfo = StealthUtils.checkPathHijack()
+                
+                privEscResults = (worldWritableFiles, pathHijackInfo)
+            }
+            
+            // 5. Generate report
+            if !options.quiet {
+                print("\nGenerating report...")
+            }
+            
+            // We'll implement full reporting later
+            // For now, just display results
+            if !options.quiet {
+                // Print system info
+                print("\n=== System Information ===")
+                print("Hostname: \(systemInfo.hostname)")
+                print("macOS Version: \(systemInfo.osVersion) (Build \(systemInfo.buildVersion))")
+                print("Kernel: \(systemInfo.kernelVersion)")
+                print("Current User: \(systemInfo.currentUser) (UID: \(systemInfo.userID))")
+                print("Admin Status: \(systemInfo.isAdmin ? "Administrator" : "Standard User")")
+                
+                // Print security status
+                print("\n=== Security Status ===")
+                print("SIP Status: \(systemInfo.isSIPEnabled ? "Enabled" : "Disabled")")
+                print("Full Disk Access: \(systemInfo.isFullDiskAccessGranted ? "Granted" : "Not Granted")")
+                
+                // Print detected security tools
+                if !securityTools.isEmpty {
+                    print("\n=== Security Tools Detected ===")
+                    for tool in securityTools {
+                        print("- \(tool)")
                     }
                 }
                 
-                // Command to run all modules
-                struct RunAll: ParsableCommand {
-                    static var configuration = CommandConfiguration(
-                        commandName: "all",
-                        abstract: "Run all reconnaissance and privilege escalation checks"
-                    )
+                // Print privilege escalation opportunities
+                if !skipPrivEsc {
+                    print("\n=== Privilege Escalation Opportunities ===")
                     
-                    @OptionGroup var options: CommonOptions
+                    if !privEscResults.worldWritable.isEmpty {
+                        print("\nWorld-writable files in sensitive locations:")
+                        for file in privEscResults.worldWritable {
+                            print("- \(file)")
+                        }
+                    } else {
+                        print("No world-writable files found in sensitive locations.")
+                    }
                     
-                    @Flag(name: .long, help: "Skip privilege escalation checks")
-                    var skipPrivEsc: Bool = false
-                    
-                    @Flag(name: .long, help: "Include browser history in report")
-                    var includeBrowserHistory: Bool = false
-                    
-                    @Flag(name: .long, help: "Self-delete after execution")
-                    var selfDelete: Bool = false
-                    
-                    func run() throws {
-                        // Add random delay if in extra stealth mode
-                        if options.extraStealth {
-                            usleep(UInt32.random(in: 100000...500000)) // 100-500ms
-                        }
-                        
-                        // Check for debugging/analysis
-                        if StealthUtils.isBeingDebugged() {
-                            if !options.quiet {
-                                print("[WARNING] Debugging detected. Proceeding with limited functionality.")
-                            }
-                            // We continue anyway but could add evasion here
-                        }
-                        
-                        if !options.quiet {
-                            print("MacRecon starting full reconnaissance...")
-                        }
-                        
-                        // 1. Run system information gathering
-                        if !options.quiet {
-                            print("\nRunning system information gathering...")
-                        }
-                        
-                        let sysInfo = SystemInfoGatherer()
-                        let systemInfo = sysInfo.gatherBasicInfo()
-                        
-                        // 2. Detect security tools
-                        if !options.quiet {
-                            print("\nDetecting security tools and environment...")
-                        }
-                        
-                        let securityTools = StealthUtils.detectSecurityTools()
-                        let analysisTools = StealthUtils.checkForAnalysisTools()
-                        let isVM = StealthUtils.isRunningInVM()
-                        
-                        // 3. Check launch items
-                        if !options.quiet {
-                            print("\nEnumerating launch agents and daemons...")
-                        }
-                        
-                        let launchItems = StealthUtils.getLaunchItems()
-                        
-                        // 4. Run privilege escalation checks if not skipped
-                        var privEscResults: (worldWritable: [String], pathHijack: (Bool, [String])) = ([], (false, []))
-                        if !skipPrivEsc {
-                            if !options.quiet {
-                                print("\nRunning privilege escalation checks...")
-                            }
-                            
-                            // Define sensitive directories
-                            let sensitiveDirs = [
-                                "/Applications",
-                                "/Library/LaunchAgents",
-                                "/Library/LaunchDaemons",
-                                "/usr/local/bin",
-                                "/usr/local/sbin"
-                            ]
-                            
-                            // Check for world-writable files
-                            let worldWritableFiles = StealthUtils.findWorldWritableFiles(in: sensitiveDirs)
-                            
-                            // Check for PATH hijacking opportunities
-                            let pathHijackInfo = StealthUtils.checkPathHijack()
-                            
-                            privEscResults = (worldWritableFiles, pathHijackInfo)
-                        }
-                        
-                        // 5. Generate report
-                        if !options.quiet {
-                            print("\nGenerating report...")
-                        }
-                        
-                        // We'll implement full reporting later
-                        // For now, just display results
-                        if !options.quiet {
-                            // Print system info
-                            print("\n=== System Information ===")
-                            print("Hostname: \(systemInfo.hostname)")
-                            print("macOS Version: \(systemInfo.osVersion) (Build \(systemInfo.buildVersion))")
-                            print("Kernel: \(systemInfo.kernelVersion)")
-                            print("Current User: \(systemInfo.currentUser) (UID: \(systemInfo.userID))")
-                            print("Admin Status: \(systemInfo.isAdmin ? "Administrator" : "Standard User")")
-                            
-                            // Print security status
-                            print("\n=== Security Status ===")
-                            print("SIP Status: \(systemInfo.isSIPEnabled ? "Enabled" : "Disabled")")
-                            print("Full Disk Access: \(systemInfo.isFullDiskAccessGranted ? "Granted" : "Not Granted")")
-                            
-                            // Print detected security tools
-                            if !securityTools.isEmpty {
-                                print("\n=== Security Tools Detected ===")
-                                for tool in securityTools {
-                                    print("- \(tool)")
-                                }
-                            }
-                            
-                            // Print privilege escalation opportunities
-                            if !skipPrivEsc {
-                                print("\n=== Privilege Escalation Opportunities ===")
-                                
-                                if !privEscResults.worldWritable.isEmpty {
-                                    print("\nWorld-writable files in sensitive locations:")
-                                    for file in privEscResults.worldWritable {
-                                        print("- \(file)")
-                                    }
-                                } else {
-                                    print("No world-writable files found in sensitive locations.")
-                                }
-                                
-                                if privEscResults.pathHijack.0 {
-                                    print("\nPATH Hijacking vulnerability detected!")
-                                    print("The following directories in PATH are writable:")
-                                    for dir in privEscResults.pathHijack.1 {
-                                        print("- \(dir)")
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Output to file if specified
-                        if let outputPath = options.output {
-                            // We'll implement report generation and encryption later
-                            print("Report saved to \(outputPath)")
-                        }
-                        
-                        // Self-delete if requested (will need to implement later)
-                        if selfDelete {
-                            if !options.quiet {
-                                print("\nSelf-deleting...")
-                            }
-                            // Implement self-deletion logic
-                        }
-                        
-                        if !options.quiet {
-                            print("\nMacRecon completed successfully.")
+                    if privEscResults.pathHijack.0 {
+                        print("\nPATH Hijacking vulnerability detected!")
+                        print("The following directories in PATH are writable:")
+                        for dir in privEscResults.pathHijack.1 {
+                            print("- \(dir)")
                         }
                     }
                 }
             }
+            
+            // Output to file if specified
+            if let outputPath = options.output {
+                // We'll implement report generation and encryption later
+                print("Report saved to \(outputPath)")
+            }
+            
+            // Self-delete if requested (will need to implement later)
+            if selfDelete {
+                if !options.quiet {
+                    print("\nSelf-deleting...")
+                }
+                // Implement self-deletion logic
+            }
+            
+            if !options.quiet {
+                print("\nMacRecon completed successfully.")
+            }
+        }
+    }
+}
 
-            // MARK: - Main execution
-            MacRecon.main()
+// MARK: - Main execution
+MacRecon.main()
