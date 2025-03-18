@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		8FE1F0092D89F0EA002E8C37 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE1F0082D89F0EA002E8C37 /* main.swift */; };
+		8FE1F0112D89F1FC002E8C37 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 8FE1F0102D89F1FC002E8C37 /* ArgumentParser */; };
+		8FE1F0142D89F211002E8C37 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 8FE1F0132D89F211002E8C37 /* SQLite */; };
+		8FE1F0172D89F22D002E8C37 /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 8FE1F0162D89F22D002E8C37 /* CryptoSwift */; };
+		8FE1F01F2D89F381002E8C37 /* SystemInfoGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE1F01E2D89F381002E8C37 /* SystemInfoGatherer.swift */; };
+		8FE1F0212D89F594002E8C37 /* StealthUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE1F0202D89F594002E8C37 /* StealthUtils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +30,8 @@
 /* Begin PBXFileReference section */
 		8FE1F0052D89F0EA002E8C37 /* MacRecon */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MacRecon; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FE1F0082D89F0EA002E8C37 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		8FE1F01E2D89F381002E8C37 /* SystemInfoGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfoGatherer.swift; sourceTree = "<group>"; };
+		8FE1F0202D89F594002E8C37 /* StealthUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +39,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FE1F0142D89F211002E8C37 /* SQLite in Frameworks */,
+				8FE1F0112D89F1FC002E8C37 /* ArgumentParser in Frameworks */,
+				8FE1F0172D89F22D002E8C37 /* CryptoSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,9 +67,51 @@
 		8FE1F0072D89F0EA002E8C37 /* MacRecon */ = {
 			isa = PBXGroup;
 			children = (
+				8FE1F01D2D89F30B002E8C37 /* Utils */,
+				8FE1F01C2D89F2FF002E8C37 /* Exfiltration */,
+				8FE1F01B2D89F2EF002E8C37 /* Reporting */,
+				8FE1F01A2D89F2DD002E8C37 /* PrivEscModules */,
+				8FE1F0182D89F280002E8C37 /* ReconModules */,
 				8FE1F0082D89F0EA002E8C37 /* main.swift */,
 			);
 			path = MacRecon;
+			sourceTree = "<group>";
+		};
+		8FE1F0182D89F280002E8C37 /* ReconModules */ = {
+			isa = PBXGroup;
+			children = (
+				8FE1F01E2D89F381002E8C37 /* SystemInfoGatherer.swift */,
+			);
+			path = ReconModules;
+			sourceTree = "<group>";
+		};
+		8FE1F01A2D89F2DD002E8C37 /* PrivEscModules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = PrivEscModules;
+			sourceTree = "<group>";
+		};
+		8FE1F01B2D89F2EF002E8C37 /* Reporting */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Reporting;
+			sourceTree = "<group>";
+		};
+		8FE1F01C2D89F2FF002E8C37 /* Exfiltration */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Exfiltration;
+			sourceTree = "<group>";
+		};
+		8FE1F01D2D89F30B002E8C37 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8FE1F0202D89F594002E8C37 /* StealthUtils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -78,6 +130,11 @@
 			dependencies = (
 			);
 			name = MacRecon;
+			packageProductDependencies = (
+				8FE1F0102D89F1FC002E8C37 /* ArgumentParser */,
+				8FE1F0132D89F211002E8C37 /* SQLite */,
+				8FE1F0162D89F22D002E8C37 /* CryptoSwift */,
+			);
 			productName = MacRecon;
 			productReference = 8FE1F0052D89F0EA002E8C37 /* MacRecon */;
 			productType = "com.apple.product-type.tool";
@@ -106,6 +163,11 @@
 				Base,
 			);
 			mainGroup = 8FE1EFFC2D89F0EA002E8C37;
+			packageReferences = (
+				8FE1F00F2D89F1FC002E8C37 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+				8FE1F0122D89F211002E8C37 /* XCRemoteSwiftPackageReference "SQLite" */,
+				8FE1F0152D89F22D002E8C37 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+			);
 			productRefGroup = 8FE1F0062D89F0EA002E8C37 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -120,6 +182,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FE1F01F2D89F381002E8C37 /* SystemInfoGatherer.swift in Sources */,
+				8FE1F0212D89F594002E8C37 /* StealthUtils.swift in Sources */,
 				8FE1F0092D89F0EA002E8C37 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,6 +349,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8FE1F00F2D89F1FC002E8C37 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+		8FE1F0122D89F211002E8C37 /* XCRemoteSwiftPackageReference "SQLite" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.3;
+			};
+		};
+		8FE1F0152D89F22D002E8C37 /* XCRemoteSwiftPackageReference "CryptoSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/CryptoSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8FE1F0102D89F1FC002E8C37 /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8FE1F00F2D89F1FC002E8C37 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		8FE1F0132D89F211002E8C37 /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8FE1F0122D89F211002E8C37 /* XCRemoteSwiftPackageReference "SQLite" */;
+			productName = SQLite;
+		};
+		8FE1F0162D89F22D002E8C37 /* CryptoSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8FE1F0152D89F22D002E8C37 /* XCRemoteSwiftPackageReference "CryptoSwift" */;
+			productName = CryptoSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8FE1EFFD2D89F0EA002E8C37 /* Project object */;
 }
